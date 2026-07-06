@@ -1,19 +1,709 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <title>Permit Whisperer — client onboarding</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Permit Whisperer — Chicago North Shore permits & licenses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --pw-navy: #1F3864;
+    --pw-accent: #2E75B6;
+    --pw-accent-bg: #EAF1FB;
+    --pw-accent-text: #0C447C;
+    --pw-success: #1E7145;
+    --pw-success-bg: #EAF3EC;
+    --pw-page: #F7F8FA;
+    --pw-card: #FFFFFF;
+    --pw-hairline: #E3E6EC;
+    --pw-muted: #6B7280;
+    --pw-ink: #1A1A1A;
+    --pw-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: var(--pw-font);
+    font-weight: 400;
+    color: var(--pw-ink);
+    background: var(--pw-page);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; }
+
+  .pw-nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--pw-card);
+    border-bottom: 1px solid var(--pw-hairline);
+  }
+  .pw-nav-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .pw-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: var(--pw-navy);
+    font-size: 16px;
+    text-decoration: none;
+  }
+  .pw-logo-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--pw-accent-bg);
+    color: var(--pw-accent-text);
+  }
+  .pw-nav-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .pw-nav-links a {
+    text-decoration: none;
+    color: var(--pw-muted);
+    font-size: 14px;
+  }
+  .pw-nav-links a:hover { color: var(--pw-navy); }
+
+  .pw-hero {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 64px 24px 48px;
+    text-align: center;
+  }
+  .pw-hero h1 {
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--pw-navy);
+    margin: 0 0 12px;
+    line-height: 1.2;
+  }
+  .pw-hero p {
+    font-size: 16px;
+    color: var(--pw-muted);
+    max-width: 560px;
+    margin: 0 auto 24px;
+    line-height: 1.5;
+  }
+  .pw-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 22px;
+    border-radius: 8px;
+    background: var(--pw-navy);
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+  }
+  .pw-btn:hover { opacity: 0.92; }
+  .pw-btn.secondary {
+    background: var(--pw-card);
+    color: var(--pw-navy);
+    border: 1px solid var(--pw-hairline);
+  }
+  .pw-btn.success { background: var(--pw-success); }
+  .pw-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .pw-section {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 8px 24px 64px;
+  }
+  .pw-services {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .pw-service-card {
+    background: var(--pw-card);
+    border: 1px solid var(--pw-hairline);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .pw-service-card h3 {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--pw-navy);
+    margin: 0 0 6px;
+  }
+  .pw-service-card p {
+    font-size: 14px;
+    color: var(--pw-muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* ---- Permit & license wizard ---- */
+  #pl-wizard {
+    max-width: 640px;
+    margin: 0 auto 64px;
+    padding: 0 24px;
+  }
+  .plw-card {
+    background: var(--pw-card);
+    border: 1px solid var(--pw-hairline);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .plw-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    background: var(--pw-accent-bg);
+    color: var(--pw-accent-text);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    margin-bottom: 12px;
+  }
+  .plw-card h2 {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--pw-ink);
+    margin: 0 0 6px;
+  }
+  .plw-card > p.plw-sub {
+    font-size: 14px;
+    color: var(--pw-muted);
+    margin: 0 0 24px;
+    line-height: 1.5;
+  }
+  .plw-progress {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--pw-hairline);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .plw-progress-fill {
+    height: 100%;
+    background: var(--pw-accent);
+    border-radius: 999px;
+    transition: width 200ms ease-out;
+  }
+  .plw-step-label {
+    font-size: 12px;
+    color: var(--pw-muted);
+    margin-bottom: 6px;
+  }
+
+  .plw-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .plw-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--pw-hairline);
+    background: var(--pw-card);
+    font-family: var(--pw-font);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--pw-ink);
+    cursor: pointer;
+  }
+  .plw-option:hover { border-color: var(--pw-accent); }
+  .plw-option.selected {
+    border-color: var(--pw-accent);
+    background: var(--pw-accent-bg);
+    color: var(--pw-accent-text);
+  }
+  .plw-option .plw-option-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--pw-page);
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+  .plw-option.selected .plw-option-icon { background: #fff; }
+
+  .plw-field { margin-bottom: 16px; }
+  .plw-field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .plw-field select {
+    width: 100%;
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid var(--pw-hairline);
+    padding: 0 12px;
+    font-family: var(--pw-font);
+    font-size: 14px;
+    background: var(--pw-card);
+    color: var(--pw-ink);
+  }
+  .plw-chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .plw-chip {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--pw-hairline);
+    background: var(--pw-card);
+    font-family: var(--pw-font);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--pw-muted);
+    cursor: pointer;
+  }
+  .plw-chip.selected {
+    border-color: var(--pw-accent);
+    background: var(--pw-accent-bg);
+    color: var(--pw-accent-text);
+  }
+
+  .plw-result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  .plw-result-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--pw-hairline);
+    text-align: left;
+  }
+  .plw-result-tag {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 999px;
+    margin-top: 1px;
+  }
+  .plw-result-tag.permit { background: var(--pw-accent-bg); color: var(--pw-accent-text); }
+  .plw-result-tag.license { background: var(--pw-success-bg); color: var(--pw-success); }
+  .plw-result-row h4 { margin: 0 0 2px; font-size: 14px; font-weight: 500; }
+  .plw-result-row p { margin: 0; font-size: 13px; color: var(--pw-muted); line-height: 1.45; }
+
+  .plw-nav-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .plw-nav-row .pw-btn { flex: 1; }
+  .plw-back-btn {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid var(--pw-hairline);
+    background: var(--pw-card);
+    color: var(--pw-muted);
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  footer {
+    border-top: 1px solid var(--pw-hairline);
+    padding: 32px 24px;
+    text-align: center;
+    color: var(--pw-muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+  <nav class="pw-nav">
+    <div class="pw-nav-inner">
+      <a href="#top" class="pw-logo">
+        <span class="pw-logo-mark">🔑</span>
+        The Permit Whisperer
+      </a>
+      <ul class="pw-nav-links">
+        <li><a href="#services">Services</a></li>
+        <li><a href="#pl-wizard">Permit &amp; license finder</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header id="top" class="pw-hero">
+    <h1>Permits and licenses, handled.</h1>
+    <p>We research, prepare, and file every permit and license your project needs on Chicago's North Shore — for homeowners, business owners, and contractors alike.</p>
+    <a href="#pl-wizard" class="pw-btn">Find what you need</a>
+  </header>
+
+  <section id="services" class="pw-section">
+    <h2 style="font-size:15px;font-weight:500;color:var(--pw-navy);margin-bottom:4px;">What we handle</h2>
+    <div class="pw-services">
+      <div class="pw-service-card">
+        <h3>Homeowners</h3>
+        <p>Remodels, additions, rental registrations, and signage — done right the first time.</p>
+      </div>
+      <div class="pw-service-card">
+        <h3>Business owners</h3>
+        <p>Restaurants, storefronts, and home-based businesses, including liquor and food licensing.</p>
+      </div>
+      <div class="pw-service-card">
+        <h3>Contractors</h3>
+        <p>Building, electrical, plumbing, and mechanical permits pulled fast so your crew keeps moving.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Permit & license finder wizard -->
+  <section id="pl-wizard">
+    <div class="plw-card">
+      <div class="plw-step-label" id="plw-step-label">Step 1 of 4</div>
+      <div class="plw-progress"><div class="plw-progress-fill" id="plw-progress-fill" style="width:25%"></div></div>
+      <div id="plw-step-content"></div>
+    </div>
+  </section>
+
+  <footer id="contact">
+    The Permit Whisperer &middot; Serving Chicago's North Shore &middot; hello@thepermitwhisperer.com
+  </footer>
+
+<script>
+(function () {
+  var state = {
+    step: 0,
+    userType: null,       // 'homeowner' | 'business' | 'contractor'
+    projectType: null,    // depends on userType
+    workType: null,       // contractor only
+    tenure: null,
+    servesAlcohol: false,
+    exteriorSign: false,
+  };
+
+  var userTypeOptions = [
+    { value: 'homeowner', icon: '🏠', label: 'Homeowner', sub: 'Remodeling, renting out, or adding a sign' },
+    { value: 'business', icon: '🏢', label: 'Business owner', sub: 'Opening or running a business' },
+    { value: 'contractor', icon: '🛠️', label: 'Contractor', sub: 'Pulling permits for a client job' },
+  ];
+
+  var projectTypeOptionsByUserType = {
+    homeowner: [
+      { value: 'remodel', icon: '🔨', label: 'Building or remodeling', sub: 'Structural, electrical, or plumbing work' },
+      { value: 'rental', icon: '🔑', label: 'Renting out a property', sub: 'Becoming a landlord' },
+      { value: 'sign', icon: '🪧', label: 'Adding a sign', sub: 'New or replacement exterior sign' },
+      { value: 'home-business', icon: '💼', label: 'Home-based business', sub: 'Running a business from home' },
+    ],
+    business: [
+      { value: 'restaurant', icon: '🍽️', label: 'Opening a restaurant', sub: 'Food service or commercial kitchen' },
+      { value: 'storefront', icon: '🏬', label: 'Opening a storefront', sub: 'Retail or general commercial space' },
+      { value: 'home-business', icon: '💼', label: 'Home-based business', sub: 'Running a business from home' },
+    ],
+    contractor: [
+      { value: 'general', icon: '🧱', label: 'Building / general', sub: 'Structural or general construction' },
+      { value: 'electrical', icon: '⚡', label: 'Electrical', sub: 'Wiring, panels, fixtures' },
+      { value: 'plumbing', icon: '🚿', label: 'Plumbing', sub: 'Pipe, fixture, water heater work' },
+      { value: 'hvac', icon: '🌬️', label: 'HVAC / mechanical', sub: 'Furnace, AC, ductwork' },
+    ],
+  };
+
+  function hasDetailsStep() {
+    return state.userType !== 'contractor';
+  }
+
+  function totalVisualSteps() {
+    return hasDetailsStep() ? 4 : 3;
+  }
+
+  function visualStepIndex() {
+    if (state.step === 3) return totalVisualSteps();
+    return state.step + 1;
+  }
+
+  function computeResults() {
+    var items = [];
+    function add(type, name, blurb) {
+      if (!items.some(function (i) { return i.name === name; })) {
+        items.push({ type: type, name: name, blurb: blurb });
+      }
+    }
+
+    if (state.userType === 'homeowner') {
+      if (state.projectType === 'remodel') {
+        add('Permit', 'Building permit', 'Required for structural, electrical, or plumbing changes.');
+      }
+      if (state.projectType === 'rental') {
+        add('License', 'Rental / landlord registration', "Most North Shore towns require landlords to register rental units annually.");
+        add('Permit', 'Rental inspection', 'A habitability inspection is typically required before a new tenant moves in.');
+      }
+      if (state.projectType === 'sign') {
+        add('Permit', 'Sign permit', 'Required for any new or replacement exterior signage.');
+      }
+      if (state.projectType === 'home-business') {
+        add('Permit', 'Home occupation permit', 'Confirms your home-based business complies with residential zoning.');
+        add('License', 'Business registration', 'Required to legally operate any business, including home-based ones.');
+      }
+    }
+
+    if (state.userType === 'business') {
+      add('License', 'Business registration', 'Required to legally operate in your city.');
+      if (state.projectType === 'restaurant') {
+        add('License', 'Food establishment license', 'Required for any business preparing or serving food.');
+        add('Permit', 'Health department plan review', 'Required before opening a commercial kitchen.');
+      }
+      if (state.projectType === 'storefront') {
+        add('Permit', 'Certificate of occupancy', 'Confirms the space is approved for your type of business.');
+      }
+      if (state.projectType === 'home-business') {
+        add('Permit', 'Home occupation permit', 'Confirms your home-based business complies with residential zoning.');
+      }
+    }
+
+    if (state.userType === 'contractor') {
+      if (state.workType === 'general') add('Permit', 'Building permit', 'Required for structural or general construction work.');
+      if (state.workType === 'electrical') add('Permit', 'Electrical permit', 'Required for wiring, panel, or fixture work.');
+      if (state.workType === 'plumbing') add('Permit', 'Plumbing permit', 'Required for pipe, fixture, or water heater work.');
+      if (state.workType === 'hvac') add('Permit', 'Mechanical permit', 'Required for furnace, AC, or ductwork installation.');
+      add('License', 'Contractor license verification', 'Most municipalities require an active, verified contractor license on file before issuing permits.');
+    }
+
+    if (state.servesAlcohol) add('License', 'Liquor license', 'Required to serve or sell alcohol on the premises.');
+    if (state.exteriorSign) add('Permit', 'Sign permit', 'Required for any new or replacement exterior signage.');
+
+    return items;
+  }
+
+  function renderOptionList(options, selectedValue, onSelect) {
+    var wrap = document.createElement('div');
+    wrap.className = 'plw-options';
+    options.forEach(function (opt) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'plw-option' + (selectedValue === opt.value ? ' selected' : '');
+      btn.innerHTML =
+        '<span class="plw-option-icon">' + opt.icon + '</span>' +
+        '<span><span style="display:block;">' + opt.label + '</span>' +
+        '<span style="display:block;font-weight:400;color:var(--pw-muted);font-size:12px;">' + opt.sub + '</span></span>';
+      btn.addEventListener('click', function () { onSelect(opt.value); });
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+
+  function renderNavRow(container, opts) {
+    var row = document.createElement('div');
+    row.className = 'plw-nav-row';
+    if (opts.showBack) {
+      var back = document.createElement('button');
+      back.type = 'button';
+      back.className = 'plw-back-btn';
+      back.setAttribute('aria-label', 'Go back');
+      back.textContent = '←';
+      back.addEventListener('click', opts.onBack);
+      row.appendChild(back);
+    }
+    if (opts.ctaLabel) {
+      var cta = document.createElement('button');
+      cta.type = 'button';
+      cta.className = 'pw-btn' + (opts.ctaClass ? ' ' + opts.ctaClass : '');
+      cta.textContent = opts.ctaLabel;
+      cta.addEventListener('click', opts.onContinue);
+      row.appendChild(cta);
+    }
+    container.appendChild(row);
+  }
+
+  function render() {
+    var content = document.getElementById('plw-step-content');
+    content.innerHTML = '';
+
+    document.getElementById('plw-step-label').textContent = 'Step ' + visualStepIndex() + ' of ' + totalVisualSteps();
+    var pct = Math.round((visualStepIndex() / totalVisualSteps()) * 100);
+    document.getElementById('plw-progress-fill').style.width = pct + '%';
+
+    if (state.step === 0) {
+      var h2 = document.createElement('h2');
+      h2.textContent = "What best describes you?";
+      var p = document.createElement('p');
+      p.className = 'plw-sub';
+      p.textContent = "We'll tailor the next questions to your situation.";
+      content.appendChild(h2);
+      content.appendChild(p);
+      content.appendChild(renderOptionList(userTypeOptions, state.userType, function (value) {
+        state.userType = value;
+        state.projectType = null;
+        state.workType = null;
+        state.step = 1;
+        render();
+      }));
+      return;
+    }
+
+    if (state.step === 1) {
+      var options = projectTypeOptionsByUserType[state.userType];
+      var h2b = document.createElement('h2');
+      h2b.textContent = state.userType === 'contractor' ? 'What type of work?' : 'What are you doing?';
+      content.appendChild(h2b);
+      var p2 = document.createElement('p');
+      p2.className = 'plw-sub';
+      p2.textContent = 'Pick the option closest to your project.';
+      content.appendChild(p2);
+      var selected = state.userType === 'contractor' ? state.workType : state.projectType;
+      content.appendChild(renderOptionList(options, selected, function (value) {
+        if (state.userType === 'contractor') { state.workType = value; }
+        else { state.projectType = value; }
+        state.step = hasDetailsStep() ? 2 : 3;
+        render();
+      }));
+      renderNavRow(content, {
+        showBack: true,
+        onBack: function () { state.step = 0; render(); },
+      });
+      return;
+    }
+
+    if (state.step === 2) {
+      var h2c = document.createElement('h2');
+      h2c.textContent = 'A couple more details';
+      content.appendChild(h2c);
+      var p3 = document.createElement('p');
+      p3.className = 'plw-sub';
+      p3.textContent = "This helps us catch licenses people often miss.";
+      content.appendChild(p3);
+
+      if (state.projectType !== 'rental') {
+        var field = document.createElement('div');
+        field.className = 'plw-field';
+        field.innerHTML = '<label for="plw-tenure">Own or lease the space?</label>';
+        var select = document.createElement('select');
+        select.id = 'plw-tenure';
+        select.innerHTML = '<option value="">Select one</option><option value="lease">Lease</option><option value="own">Own</option>';
+        select.value = state.tenure || '';
+        select.addEventListener('change', function (e) { state.tenure = e.target.value; });
+        field.appendChild(select);
+        content.appendChild(field);
+      }
+
+      var chipField = document.createElement('div');
+      chipField.className = 'plw-field';
+      chipField.innerHTML = '<label>Anything else that applies?</label>';
+      var chipRow = document.createElement('div');
+      chipRow.className = 'plw-chip-row';
+
+      if (state.userType === 'business') {
+        var alcoholChip = document.createElement('button');
+        alcoholChip.type = 'button';
+        alcoholChip.className = 'plw-chip' + (state.servesAlcohol ? ' selected' : '');
+        alcoholChip.textContent = 'Serves alcohol';
+        alcoholChip.addEventListener('click', function () {
+          state.servesAlcohol = !state.servesAlcohol;
+          render();
+        });
+        chipRow.appendChild(alcoholChip);
+      }
+
+      if (state.projectType !== 'sign') {
+        var signChip = document.createElement('button');
+        signChip.type = 'button';
+        signChip.className = 'plw-chip' + (state.exteriorSign ? ' selected' : '');
+        signChip.textContent = 'Exterior sign';
+        signChip.addEventListener('click', function () {
+          state.exteriorSign = !state.exteriorSign;
+          render();
+        });
+        chipRow.appendChild(signChip);
+      }
+
+      chipField.appendChild(chipRow);
+      content.appendChild(chipField);
+
+      renderNavRow(content, {
+        showBack: true,
+        ctaLabel: 'See what I need',
+        onBack: function () { state.step = 1; render(); },
+        onContinue: function () { state.step = 3; render(); },
+      });
+      return;
+    }
+
+    if (state.step === 3) {
+      var results = computeResults();
+      var h2d = document.createElement('h2');
+      h2d.textContent = "Here's what you'll need";
+      content.appendChild(h2d);
+      var p4 = document.createElement('p');
+      p4.className = 'plw-sub';
+      p4.textContent = results.length
+        ? 'Based on your answers, here are the permits and licenses that apply.'
+        : "We didn't find anything specific — reach out and we'll take a closer look.";
+      content.appendChild(p4);
+
+      var list = document.createElement('div');
+      list.className = 'plw-result-list';
+      results.forEach(function (item) {
+        var row = document.createElement('div');
+        row.className = 'plw-result-row';
+        row.innerHTML =
+          '<span class="plw-result-tag ' + item.type.toLowerCase() + '">' + item.type + '</span>' +
+          '<div><h4>' + item.name + '</h4><p>' + item.blurb + '</p></div>';
+        list.appendChild(row);
+      });
+      content.appendChild(list);
+
+      var ctaLink = document.createElement('a');
+      ctaLink.href = 'app/';
+      ctaLink.className = 'pw-btn success';
+      ctaLink.style.display = 'block';
+      ctaLink.style.textAlign = 'center';
+      ctaLink.style.marginBottom = '10px';
+      ctaLink.textContent = 'Start onboarding with The Permit Whisperer';
+      content.appendChild(ctaLink);
+
+      renderNavRow(content, {
+        showBack: true,
+        ctaLabel: 'Start over',
+        onBack: function () { state.step = hasDetailsStep() ? 2 : 1; render(); },
+        onContinue: function () {
+          state = { step: 0, userType: null, projectType: null, workType: null, tenure: null, servesAlcohol: false, exteriorSign: false };
+          render();
+        },
+      });
+      return;
+    }
+  }
+
+  render();
+})();
+</script>
+
+</body>
 </html>
