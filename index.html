@@ -297,14 +297,28 @@
     margin: 20px 0;
   }
   .plw-result-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
     padding: 14px 16px;
     border-radius: 12px;
     border: 1px solid var(--pw-hairline);
     text-align: left;
   }
+  .plw-result-summary {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .plw-result-summary::-webkit-details-marker { display: none; }
+  .plw-result-summary:focus-visible { outline: 2px solid var(--pw-accent); outline-offset: 2px; }
+  .plw-result-chevron {
+    flex-shrink: 0;
+    margin-left: auto;
+    margin-top: 2px;
+    color: var(--pw-muted);
+    transition: transform 150ms ease-out;
+  }
+  .plw-result-row[open] .plw-result-chevron { transform: rotate(180deg); }
   .plw-result-tag {
     flex-shrink: 0;
     font-size: 11px;
@@ -317,6 +331,27 @@
   .plw-result-tag.license { background: var(--pw-success-bg); color: var(--pw-success); }
   .plw-result-row h4 { margin: 0 0 2px; font-size: 14px; font-weight: 500; }
   .plw-result-row p { margin: 0; font-size: 13px; color: var(--pw-muted); line-height: 1.45; }
+  .plw-result-detail {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--pw-hairline);
+  }
+  .plw-result-detail p {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: var(--pw-muted);
+    line-height: 1.5;
+  }
+  .plw-result-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--pw-accent-text);
+    text-decoration: none;
+  }
+  .plw-result-link:hover { text-decoration: underline; }
 
   .plw-nav-row {
     display: flex;
@@ -449,11 +484,79 @@
     return state.step + 1;
   }
 
+  function searchLink(query) {
+    return 'https://www.google.com/search?q=' + encodeURIComponent(query);
+  }
+
+  // Verified, real destinations for state-level items; a labeled search link
+  // for hyper-local ones, since building/sign/occupancy permits are issued by
+  // whichever of the ~10 North Shore municipalities the visitor is in, and we
+  // don't collect a specific town in this quick finder.
+  var ITEM_DETAILS = {
+    'Building permit': {
+      howTo: "Submit your plans (or a simple project description for smaller jobs) to your municipality's building department along with the permit fee. Most North Shore towns review applications within 1–3 weeks, and work can't legally begin until the permit is issued and posted on site.",
+      link: { label: "Find your building department", url: searchLink('building permit application North Shore Illinois building department') },
+    },
+    'Rental / landlord registration': {
+      howTo: "Register as a landlord with your municipality's clerk or building department before renting out the unit. You'll typically need the property address, unit count, and your contact information — some towns also charge an annual registration fee.",
+      link: { label: "Find your town's rental registration", url: searchLink('rental property landlord registration North Shore Illinois') },
+    },
+    'Rental inspection': {
+      howTo: "Schedule a habitability inspection with your town's building department before a new tenant moves in. Inspectors typically check smoke and CO detectors, egress windows, electrical safety, and general condition.",
+      link: { label: 'Request a rental inspection', url: searchLink('rental inspection request North Shore Illinois building department') },
+    },
+    'Sign permit': {
+      howTo: "Submit your sign's dimensions, materials, and a site plan showing placement to your municipality's building or zoning department. Many towns also enforce design guidelines (size, lighting, materials) specific to your business district.",
+      link: { label: 'Find your sign permit requirements', url: searchLink('sign permit application North Shore Illinois zoning department') },
+    },
+    'Home occupation permit': {
+      howTo: "Apply through your municipality's zoning or building department. You'll typically need to describe the business, confirm it won't bring employees or customer traffic to the home, and show it stays within residential zoning limits.",
+      link: { label: 'Find your home occupation permit', url: searchLink('home occupation permit application North Shore Illinois') },
+    },
+    'Business registration': {
+      howTo: "Register your business with your city or village clerk's office. If you're forming an LLC or corporation, you'll also need to register that entity with the Illinois Secretary of State.",
+      link: { label: 'Find your business registration requirements', url: searchLink('business registration license North Shore Illinois city clerk') },
+    },
+    'Food establishment license': {
+      howTo: "Apply through your county or local health department before opening a commercial kitchen. You'll need approved plans, proof of a certified food protection manager, and to pass a pre-opening inspection.",
+      link: { label: 'Illinois Dept. of Public Health — Retail Food', url: 'https://dph.illinois.gov/topics-services/food-safety/retail-food.html' },
+    },
+    'Health department plan review': {
+      howTo: "Submit your kitchen floor plan and equipment list to your county or local health department before construction begins — approval here is usually required before your building permit can be finalized.",
+      link: { label: 'Illinois Dept. of Public Health — Retail Food', url: 'https://dph.illinois.gov/topics-services/food-safety/retail-food.html' },
+    },
+    'Certificate of occupancy': {
+      howTo: "Request a final inspection from your municipality's building department once construction or buildout is complete. The certificate confirms the space is safe and approved for your specific use.",
+      link: { label: 'Find your certificate of occupancy process', url: searchLink('certificate of occupancy application North Shore Illinois building department') },
+    },
+    'Electrical permit': {
+      howTo: "Submit your scope of work to your municipality's building department. Most towns require the work to be performed by (or under) an electrician registered with that municipality.",
+      link: { label: 'Find your electrical permit requirements', url: searchLink('electrical permit application North Shore Illinois building department') },
+    },
+    'Plumbing permit': {
+      howTo: "Illinois requires plumbing work to be performed by an Illinois-licensed plumber. Submit the permit application through your municipality's building department, referencing your plumber's state license number.",
+      link: { label: 'Verify an Illinois plumbing license', url: 'https://idfpr.illinois.gov/checklicense.html' },
+    },
+    'Mechanical permit': {
+      howTo: "Submit your HVAC scope of work to your municipality's building department before starting installation. Many towns require a licensed HVAC contractor's information on the application.",
+      link: { label: 'Find your mechanical permit requirements', url: searchLink('mechanical HVAC permit application North Shore Illinois building department') },
+    },
+    'Contractor license verification': {
+      howTo: "Before pulling permits, most towns want proof of an active, insured contractor registered with them, plus any Illinois state license (plumbing, roofing, etc.) that applies to your trade.",
+      link: { label: 'Verify an Illinois contractor license', url: 'https://idfpr.illinois.gov/checklicense.html' },
+    },
+    'Liquor license': {
+      howTo: 'Illinois requires both a state license from the Illinois Liquor Control Commission and a separate local liquor license from your municipality. Apply for both in parallel, since each can take several weeks.',
+      link: { label: 'Illinois Liquor Control Commission', url: 'https://ilcc.illinois.gov/' },
+    },
+  };
+
   function computeResults() {
     var items = [];
     function add(type, name, blurb) {
       if (!items.some(function (i) { return i.name === name; })) {
-        items.push({ type: type, name: name, blurb: blurb });
+        var details = ITEM_DETAILS[name] || {};
+        items.push({ type: type, name: name, blurb: blurb, howTo: details.howTo || '', link: details.link || null });
       }
     }
 
@@ -670,11 +773,33 @@
       var list = document.createElement('div');
       list.className = 'plw-result-list';
       results.forEach(function (item) {
-        var row = document.createElement('div');
+        var row = document.createElement('details');
         row.className = 'plw-result-row';
-        row.innerHTML =
+
+        var summary = document.createElement('summary');
+        summary.className = 'plw-result-summary';
+        summary.innerHTML =
           '<span class="plw-result-tag ' + item.type.toLowerCase() + '">' + item.type + '</span>' +
-          '<div><h4>' + item.name + '</h4><p>' + item.blurb + '</p></div>';
+          '<div><h4>' + item.name + '</h4><p>' + item.blurb + '</p></div>' +
+          '<span class="plw-result-chevron" aria-hidden="true">⌄</span>';
+        row.appendChild(summary);
+
+        var detail = document.createElement('div');
+        detail.className = 'plw-result-detail';
+        var howToP = document.createElement('p');
+        howToP.textContent = item.howTo || "We'll walk you through this step by step once you're onboarded.";
+        detail.appendChild(howToP);
+        if (item.link) {
+          var link = document.createElement('a');
+          link.className = 'plw-result-link';
+          link.href = item.link.url;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.textContent = item.link.label + ' ↗';
+          detail.appendChild(link);
+        }
+        row.appendChild(detail);
+
         list.appendChild(row);
       });
       content.appendChild(list);
