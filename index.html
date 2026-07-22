@@ -484,6 +484,41 @@
     return state.step + 1;
   }
 
+  // Shared with src/lib/storage.ts in the onboarding app (same localStorage
+  // key + shape) so answers from this finder carry over and the customer
+  // doesn't have to re-enter them on the paid onboarding form.
+  var ONBOARDING_STORAGE_KEY = 'permit-whisperer-onboarding';
+
+  function sendAnswersToOnboardingApp() {
+    // The onboarding app's project-type dropdown only covers homeowner/business
+    // scenarios (restaurant, storefront, rental, remodel, home-business), which
+    // happen to use the same value strings as this wizard. Contractor work
+    // types (general/electrical/plumbing/hvac) have no equivalent field there,
+    // so we leave projectType blank for that path.
+    var projectType = (state.userType === 'homeowner' || state.userType === 'business')
+      ? (state.projectType || '')
+      : '';
+
+    var payload = {
+      currentStep: 0,
+      projectType: projectType,
+      address: '',
+      tenure: state.tenure || '',
+      servesAlcohol: !!state.servesAlcohol,
+      exteriorSign: !!state.exteriorSign,
+      agreementSigned: false,
+      documents: {},
+      authorizationSigned: false,
+    };
+
+    try {
+      localStorage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(payload));
+    } catch (e) {
+      // localStorage unavailable (private mode, quota) — the onboarding app
+      // still works, the customer just re-enters these answers there.
+    }
+  }
+
   function searchLink(query) {
     return 'https://www.google.com/search?q=' + encodeURIComponent(query);
   }
@@ -814,6 +849,7 @@
       ctaLink.style.textAlign = 'center';
       ctaLink.style.marginBottom = '10px';
       ctaLink.textContent = 'Start onboarding with The Permit Whisperer';
+      ctaLink.addEventListener('click', sendAnswersToOnboardingApp);
       content.appendChild(ctaLink);
 
       renderNavRow(content, {
